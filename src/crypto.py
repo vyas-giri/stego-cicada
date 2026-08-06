@@ -3,10 +3,13 @@ from Crypto.Random import get_random_bytes
 from argon2 import PasswordHasher
 from argon2.low_level import hash_secret_raw, Type
 from typing import Optional
+import struct
 
 def generate_key(password: str, salt: Optional[bytes] = None) -> tuple[bytes, bytes]:
     if salt is None:
         salt = get_random_bytes(16)
+    else:
+        salt = bytes(salt)
     
     key = hash_secret_raw(
         password.encode(),
@@ -31,12 +34,11 @@ def decrypt_aes_gcm(ciphertext: bytes, nonce: bytes, tag: bytes, key: bytes) -> 
 def encrypt_with_pwd(plaintext: bytes, password: str) -> bytes:
     key, salt = generate_key(password)
     ciphertext, nonce, tag = encrypt_aes_gcm(plaintext, key)
-    import struct
     result = salt + nonce + struct.pack('>I', len(ciphertext)) + ciphertext + tag
     return result
 
 def decrypt_with_pwd(encrypted_data: bytes, password: str) -> bytes:
-    import struct
+    encrypted_data = bytes(encrypted_data)
     salt = encrypted_data[:16]
     nonce = encrypted_data[16:32]
     ciphertext_length = struct.unpack('>I', encrypted_data[32:36])[0]

@@ -1,3 +1,5 @@
+import numpy as np
+
 def bytes_to_bits(data: bytes) -> list:
     bits = []
     for byte in data:
@@ -13,3 +15,12 @@ def bits_to_bytes(bits: list) -> bytes:
             byte |= (bits[i + j] << (7 - j))
         bytes_list.append(byte)
     return bytes(bytes_list)
+
+def get_embedding_mask() -> np.ndarray:
+    mask = np.zeros((8, 8), dtype=np.uint8)
+    mask[2, 3] = 1
+    mask[3, 3] = 1
+    mask[3, 4] = 1
+    mask[4, 3] = 1
+    mask[4, 4] = 1
+    return mask

@@ -33,3 +33,14 @@ def merge_blocks(blocks: np.ndarray, w_blocks: int, block_size: int = 8) -> np.n
     cropped_h = h_blocks * block_size
     cropped_w = w_blocks * block_size
     return merged.reshape(cropped_h, cropped_w)
+
+def load_image_as_rgb(filepath: str) -> np.ndarray:
+    img = Image.open(filepath)
+    if img.mode != 'RGB':
+        img = img.convert('RGB')
+    return np.array(img)
+
+def save_rgb_as_png(data: np.ndarray, filepath: str):
+    data = np.clip(data, 0, 255).astype(np.uint8)
+    img = Image.fromarray(data, 'RGB')
+    img.save(filepath, 'PNG')
