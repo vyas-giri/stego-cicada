@@ -12,7 +12,7 @@ def main():
     hide_parser.add_argument("image_path", type=str, help="Path to the input image")
     hide_parser.add_argument("message", type=str, help="Message to hide in the image")
     hide_parser.add_argument("-p", "--password", type=str,  help="Password for encryption")
-    hide_parser.add_argument("-m", "--method", type=str, default="auto", choices=["auto", "png_lsb", "jpeg_dct"], help="Method to use for hiding the message")
+    hide_parser.add_argument("-m", "--method", type=str, default="auto", choices=["auto", "png_lsb", "png_lsb_matching", "jpeg_dct"], help="Method to use for hiding the message")
     
     extract_parser = subparsers.add_parser("extract", help="Extract a message from an image")
     extract_parser.add_argument("image_path", type=str, help="Path to the image with hidden message")

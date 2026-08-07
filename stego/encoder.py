@@ -35,6 +35,40 @@ def embed_bits_spatially(y_channel: np.ndarray, bits: list) -> np.ndarray:
     flat_y[:len(bits)] |= np.array(bits, dtype=np.uint8)
     return flat_y.reshape(y_channel.shape)
 
+def embed_bits_spatially_lsb_matching(y_channel: np.ndarray, bits: list) -> np.ndarray:
+    """
+    Embeds bits using LSB Matching (+/- 1 steganography).
+    Defeats Chi-Square steganalysis by preventing Pair-of-Value (PoV) histogram equalization.
+    """
+    flat = y_channel.flatten().copy().astype(np.int16)
+
+    if len(bits) > len(flat):
+        raise ValueError(f"Payload too large. Required: {len(bits)} bits, Available: {len(flat)} bits.")
+
+    bits_arr = np.array(bits, dtype=np.int16)
+    subset = flat[:len(bits)]
+    current_lsbs = subset & 1
+
+    # Find indices where the current LSB does not match the payload bit
+    mismatch_mask = (current_lsbs != bits_arr)
+    mismatch_indices = np.where(mismatch_mask)[0]
+
+    # Randomly select +1 or -1 for each mismatch
+    random_dirs = np.random.choice([-1, 1], size=len(mismatch_indices))
+
+    for idx, direction in zip(mismatch_indices, random_dirs):
+        val = subset[idx]
+        # Boundary protection for 8-bit image range [0, 255]
+        if val == 0:
+            subset[idx] = 1
+        elif val == 255:
+            subset[idx] = 254
+        else:
+            subset[idx] = val + direction
+
+    flat[:len(bits)] = subset
+    return flat.astype(np.uint8).reshape(y_channel.shape)
+
 def embed_bits_in_jpeg_dct(image_path: str, bits: list, output_path: str):
     jpeg_obj = jpegio.read(image_path)
     y_coefs = jpeg_obj.coef_arrays[0]

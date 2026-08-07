@@ -2,7 +2,7 @@ import struct
 import os
 from datetime import datetime
 from stego.crypto import decrypt_with_pwd, encrypt_with_pwd
-from stego.encoder import encode_with_rs, embed_bits_spatially, embed_bits_in_jpeg_dct
+from stego.encoder import encode_with_rs, embed_bits_spatially, embed_bits_in_jpeg_dct, embed_bits_spatially_lsb_matching
 from stego.helper import bytes_to_bits, bits_to_bytes
 from stego.img_utils import save_rgb_as_png, load_image_as_rgb
 from stego.decoder import decode_with_rs, extract_bits_spatially, extract_bits_from_jpeg_dct
@@ -45,15 +45,19 @@ def hide_message(
         embed_bits_in_jpeg_dct(image_path, bits_payload, output_path)
         capacity_bits = os.path.getsize(image_path) * 8  # Approximate capacity in bits for JPEG
 
-    elif selected_method == "png_lsb":
-        output_path = os.path.join(OUTPUT_DIR, f"stego_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png")
+    elif selected_method in ["png_lsb", "png_lsb_matching"]:
+        output_path = os.path.join(OUTPUT_DIR, f"stego_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.png")
         image_rgb = load_image_as_rgb(image_path)
-        capacity_bits = image_rgb.size  # Total number of bits available in the image
-
+        capacity_bits = image_rgb.size
+        
         if len(bits_payload) > capacity_bits:
-            raise ValueError(f"Message is too large. Required: {len(bits_payload)} bits, Available: {capacity_bits} bits.")
+            raise ValueError(f"Message too large. Required: {len(bits_payload)} bits, Available: {capacity_bits} bits.")
 
-        modified_rgb = embed_bits_spatially(image_rgb, bits_payload)
+        if selected_method == "png_lsb_matching":
+            modified_rgb = embed_bits_spatially_lsb_matching(image_rgb, bits_payload)
+        else:
+            modified_rgb = embed_bits_spatially(image_rgb, bits_payload)
+
         save_rgb_as_png(modified_rgb, output_path)
 
     else:
@@ -78,7 +82,7 @@ def extract_message(
 ) -> str:
     selected_method = resolve_method(image_path, method)
 
-    if selected_method == "png_lsb":
+    if selected_method in ["png_lsb", "png_lsb_matching"]:
         image_rgb = load_image_as_rgb(image_path)
         header_bits = extract_bits_spatially(image_rgb, 64)  # Extract first 64 bits for header
     elif selected_method == "jpeg_dct":
@@ -93,7 +97,7 @@ def extract_message(
     payload_length = struct.unpack('>I', header_bytes[4:8])[0]
     total_bits = (8 + payload_length) * 8
 
-    if selected_method == "png_lsb":
+    if selected_method in ["png_lsb", "png_lsb_matching"]:
         extracted_bits = extract_bits_spatially(image_rgb, total_bits)
     elif selected_method == "jpeg_dct":
         extracted_bits = extract_bits_from_jpeg_dct(image_path, total_bits)
