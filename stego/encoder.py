@@ -78,7 +78,7 @@ def embed_bits_in_jpeg_dct(image_path: str, bits: list, output_path: str):
     ac_mask = np.ones((h, w), dtype=bool)
     ac_mask[::8, ::8] = False
 
-    valid_ac_mask = ac_mask & (y_coefs != 0)
+    valid_ac_mask = ac_mask & ((y_coefs > 1) | (y_coefs < -2))
 
     total_ac_capacity = np.sum(valid_ac_mask)
     if len(bits) > total_ac_capacity:

@@ -37,7 +37,7 @@ def extract_bits_from_jpeg_dct(image_path: str, num_bits: int) -> list:
     ac_mask = np.ones((h, w), dtype=bool)
     ac_mask[0::8, 0::8] = False  # Exclude DC coefficients
 
-    valid_ac_mask = ac_mask & (y_coefs != 0)
+    valid_ac_mask = ac_mask & ((y_coefs > 1) | (y_coefs < -2))
 
     flat_valid_ac = y_coefs[valid_ac_mask]
     if num_bits > len(flat_valid_ac):
