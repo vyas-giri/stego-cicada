@@ -1,13 +1,9 @@
-import sys
-import pathlib
-import os
 import tempfile
+import os
 import numpy as np
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "src"))
-
-from src.jpeg_engine import embed_bits_in_jpeg_dct
-from src.steganalysis import analyze_jpeg_dct
+from stego.encoder import embed_bits_in_jpeg_dct
+from stego.steganalysis import analyze_jpeg_dct
 from PIL import Image
 
 def generate_test_jpeg(path: str, size=(256, 256)):
