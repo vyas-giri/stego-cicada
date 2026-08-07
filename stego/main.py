@@ -3,6 +3,7 @@ import sys
 
 from stego.steganography import hide_message, extract_message
 from stego.steganalysis import analyze_jpeg_dct, analyze_png_lsb, analyze_image
+from stego.heatmap import generate_residual_heatmap
 
 def main():
     parser = argparse.ArgumentParser(description="Steganography Tool")
@@ -23,6 +24,12 @@ def main():
     analyze_parser.add_argument("image_path", type=str, help="Path to the image to analyze")
     analyze_parser.add_argument("-m", "--method", type=str, default="auto", choices=["auto", "png_lsb", "jpeg_dct"], help="Method to use for analysis")
 
+    inspect_parser = subparsers.add_parser("inspect", help="Generate residual heatmap between original and stego image")
+    inspect_parser.add_argument("original_path", type=str, help="Path to the original image")
+    inspect_parser.add_argument("stego_path", type=str, help="Path to the stego image")
+    inspect_parser.add_argument("-o", "--output", type=str, default="data/output_imgs/residual_heatmap.png", help="Path to save the residual heatmap")
+    inspect_parser.add_argument("-a", "--amplification", type=int, default=50, help="Amplification factor for the residual heatmap")
+
     args = parser.parse_args()
 
     try:
@@ -40,6 +47,9 @@ def main():
             print(f"Chi-Square Statistic: {res['chi2_stat']:.2f}")
             print(f"Degrees of Freedom: {res['dof']}")
             print(f"Stego Detected? -> {'YES (Anomalous payload detected)' if res['detected'] else 'NO (Natural statistics)'}")
+        elif args.command == "inspect":
+            out = generate_residual_heatmap(args.original_path, args.stego_path, args.output, args.amplification)
+            print(f"Residual heatmap generated successfully at: {out}")
         else:
             parser.print_help()
     except ValueError as e:
