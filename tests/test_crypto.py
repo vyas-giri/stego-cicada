@@ -1,4 +1,4 @@
-from src.crypto import encrypt_with_pwd as encrypt_with_password, decrypt_with_pwd as decrypt_with_password
+from stego.crypto import encrypt_with_pwd as encrypt_with_password, decrypt_with_pwd as decrypt_with_password
 
 def test_encrypt_decrypt():
     message = b"Hello, secret world!"

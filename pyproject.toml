@@ -1,2 +1,14 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "stego"
+version = "0.1.0"
+
+[tool.setuptools.packages.find]
+include = ["stego*"]
+exclude = ["data*", "examples*", "tests*"]
+
 [tool.pytest.ini_options]
 pythonpath = ["."]

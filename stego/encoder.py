@@ -1,6 +1,7 @@
 from reedsolo import RSCodec
 from typing import cast
 import numpy as np
+import jpegio
 
 def encode_with_rs(data: bytes, ecc: int = 32) -> bytes:
     rsc = RSCodec(ecc)
@@ -33,3 +34,24 @@ def embed_bits_spatially(y_channel: np.ndarray, bits: list) -> np.ndarray:
     flat_y[:len(bits)] &= 254
     flat_y[:len(bits)] |= np.array(bits, dtype=np.uint8)
     return flat_y.reshape(y_channel.shape)
+
+def embed_bits_in_jpeg_dct(image_path: str, bits: list, output_path: str):
+    jpeg_obj = jpegio.read(image_path)
+    y_coefs = jpeg_obj.coef_arrays[0]
+
+    h, w = y_coefs.shape
+
+    ac_mask = np.ones((h, w), dtype=bool)
+    ac_mask[0::8, 0::8] = False
+
+    total_ac_capacity = np.sum(ac_mask)
+    if len(bits) > total_ac_capacity:
+        raise ValueError(f"Payload too large for JPEG DCT. Required: {len(bits)} bits, Available: {total_ac_capacity} bits.")
+    
+    flat_ac = y_coefs[ac_mask].copy()
+
+    flat_ac[:len(bits)] = (flat_ac[:len(bits)] & ~1) | np.array(bits, dtype=np.int16)
+
+    y_coefs[ac_mask] = flat_ac
+    
+    jpegio.write(jpeg_obj, output_path)

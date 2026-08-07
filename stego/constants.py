@@ -5,5 +5,6 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = os.path.join(PROJECT_ROOT, "data")
 INPUT_DIR = os.path.join(DATA_DIR, "input_imgs")
 OUTPUT_DIR = os.path.join(DATA_DIR, "output_imgs")
+IMAGE_PATH = os.path.join(INPUT_DIR, "chilling.jpg")
 
 MAGIC = b"STG1"

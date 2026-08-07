@@ -1,7 +1,6 @@
 import numpy as np
 from scipy.fft import dctn, idctn
 from typing import cast
-from typing import List
 
 # Re-export embedding helpers so tests can import them from `src.dct`
 from helper import get_embedding_mask as _helper_get_embedding_mask
