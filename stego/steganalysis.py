@@ -77,6 +77,9 @@ def analyze_jpeg_dct(image_path: str, num_chunks: int = 50) -> dict:
     shifted_ac = (nonzero_ac + shift).astype(np.int32)
     max_val = int(shifted_ac.max()) + 1 if len(shifted_ac) > 0 else 1
 
+    if max_val % 2 != 0:
+        max_val += 1  # Ensure even number of bins for Chi-Square
+
     global_counts = np.bincount(shifted_ac, minlength=max_val)
     global_chi2, global_dof, global_p = _compute_chi2_vectorized(global_counts)
 
