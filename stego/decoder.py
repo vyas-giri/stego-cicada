@@ -2,6 +2,7 @@ import numpy as np
 from reedsolo import RSCodec
 from typing import cast
 import jpegio
+from stego.encoder import get_valid_jpeg_ac_mask
 
 def decode_with_rs(encoded_data: bytes, ecc: int = 32) -> bytes:
     rsc = RSCodec(ecc)
@@ -33,11 +34,7 @@ def extract_bits_from_jpeg_dct(image_path: str, num_bits: int) -> list:
     jpeg_obj = jpegio.read(image_path)
     y_coefs = jpeg_obj.coef_arrays[0]
 
-    h, w = y_coefs.shape
-    ac_mask = np.ones((h, w), dtype=bool)
-    ac_mask[0::8, 0::8] = False  # Exclude DC coefficients
-
-    valid_ac_mask = ac_mask & ((y_coefs > 1) | (y_coefs < -2))
+    valid_ac_mask = get_valid_jpeg_ac_mask(y_coefs)
 
     flat_valid_ac = y_coefs[valid_ac_mask]
     if num_bits > len(flat_valid_ac):

@@ -2,7 +2,7 @@ import tempfile
 import os
 import numpy as np
 
-from stego.encoder import embed_bits_in_jpeg_dct
+from stego.encoder import embed_bits_in_jpeg_dct, get_valid_jpeg_ac_mask
 from stego.steganalysis import analyze_jpeg_dct
 from PIL import Image
 
@@ -35,9 +35,7 @@ def run_detection_benchmark():
         # Total capacity in AC coefficients
         import jpegio
         j = jpegio.read(in_jpg)
-        ac_mask = np.ones(j.coef_arrays[0].shape, dtype=bool)
-        ac_mask[::8, ::8] = False
-        max_ac_bits = int(np.sum(ac_mask))
+        max_ac_bits = int(np.sum(get_valid_jpeg_ac_mask(j.coef_arrays[0])))
 
         payload_ratios = [0.05, 0.20, 0.50, 0.75, 1.00]
 

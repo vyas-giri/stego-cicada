@@ -73,12 +73,7 @@ def embed_bits_in_jpeg_dct(image_path: str, bits: list, output_path: str):
     jpeg_obj = jpegio.read(image_path)
     y_coefs = jpeg_obj.coef_arrays[0]
 
-    h, w = y_coefs.shape
-
-    ac_mask = np.ones((h, w), dtype=bool)
-    ac_mask[::8, ::8] = False
-
-    valid_ac_mask = ac_mask & ((y_coefs > 1) | (y_coefs < -2))
+    valid_ac_mask = get_valid_jpeg_ac_mask(y_coefs)
 
     total_ac_capacity = np.sum(valid_ac_mask)
     if len(bits) > total_ac_capacity:
@@ -89,3 +84,14 @@ def embed_bits_in_jpeg_dct(image_path: str, bits: list, output_path: str):
 
     y_coefs[valid_ac_mask] = flat_valid_ac
     jpegio.write(jpeg_obj, output_path)
+
+def get_valid_jpeg_ac_mask(y_coefs: np.ndarray) -> np.ndarray:
+    """
+    Boolean mask of AC coefficients safe to embed one LSB bit into without
+    ever landing on 0 or ±1 after embedding. This is the true usable
+    capacity for embed_bits_in_jpeg_dct / extract_bits_from_jpeg_dct.
+    """
+    h, w = y_coefs.shape
+    ac_mask = np.ones((h, w), dtype=bool)
+    ac_mask[::8, ::8] = False
+    return ac_mask & ((y_coefs > 1) | (y_coefs < -2))
